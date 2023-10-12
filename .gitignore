@@ -1,0 +1,10 @@
+/bin
+/obj
+/obj/Debug  
+d3moApp/
+Hello-World/
+d3moAPI/Migrations
+d3moAPI/.vs
+d3moAPI/obj
+d3moAPI/bin
+
