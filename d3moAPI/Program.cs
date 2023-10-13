@@ -9,7 +9,8 @@ var conn = builder.Configuration.GetConnectionString("DefaultConnection");
 //connect to NpgSQL
 builder.Services.AddDbContext<ApiDbContext>(o =>
 {
-    o.UseNpgsql(conn);
+    //o.UseNpgsql(conn); //postgres
+    o.UseSqlite(conn);
 });
 
 builder.Services.AddControllers();

@@ -7,5 +7,7 @@ d3moAPI/Migrations
 d3moAPI/.vs
 d3moAPI/obj
 d3moAPI/bin
-
+d3moAPI/*.db
+d3moAPI/*.db-shm
+d3moAPI
 .vscode/
