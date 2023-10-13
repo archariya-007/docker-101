@@ -22,14 +22,13 @@ namespace d3moAPI.Controllers
         [HttpGet(Name = "GetDrivers")]
         public async Task<IActionResult> Get()
         {
-            // var driver = new Driver
-            // {
-            //     Id = 1,
-            //     Name = "Hulk Smash",
-            //     DriverNumber = 100
-            // };
-            // _context.Add(driver);
-            // await _context.SaveChangesAsync();
+            var driver = new Driver
+            {
+                Name = "Hulk Smash",
+                DriverNumber = 100
+            };
+            _context.Add(driver);
+            await _context.SaveChangesAsync();
 
             var drivers = await _context.Drivers.ToListAsync();
             return Ok(drivers);
