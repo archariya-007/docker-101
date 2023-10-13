@@ -1,7 +1,12 @@
-DB->User ID=postgres;Password=postgres;Server=localhost;Port=5433;Database=SimpleDb;Pooling=true
-dotnet ef migrations add InitialCreate
-dotnet ef database update
-DataSource=d3moApp.db;
+##Steps dotnet ef
+1 generate spec
+2 compose
+3 create database locally
+4 compse up again
+
+
 
 stop container: docker compose down 
 rebuild and push: docker compose up --build
+
+
