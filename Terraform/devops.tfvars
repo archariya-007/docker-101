@@ -1,4 +1,3 @@
 region                                       = "!!^^region^^!!"
-carrier_notification                         = "!!^^carrierNotificationDatabaseConnectionString^^!!"
+db_connection                                = "!!^^pSqlDatabaseConnectionString^^!!"
 environment                                  = "!!^^environment^^!!"
-aivenSecretName                              = "!!^^aivenSecretName^^!!"
