@@ -1,0 +1,88 @@
+parameters:
+  - name: backendServiceAWS
+    type: string
+  - name: backendAWSBucketName
+    type: string
+  - name: backendAWSKey
+    type: string
+  - name: environmentServiceNameAWS
+    type: string
+      
+steps:
+  - checkout: self
+
+  - task: ms-devlabs.custom-terraform-tasks.custom-terraform-installer-task.TerraformInstaller@0
+    displayName: 'Install Terraform 1.3.2'
+    inputs:
+      terraformVersion: 1.3.2
+
+  - task: qetza.replacetokens.replacetokens-task.replacetokens@5
+    displayName: 'Replace tokens in **/*.tfvars'
+    inputs:
+      rootDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+      targetFiles: '**/*.tfvars'
+      tokenPattern: custom
+      tokenPrefix: '!!^^'
+      tokenSuffix: '^^!!' 
+
+  - powershell: |
+      Get-Content -Path "$(System.DefaultWorkingDirectory)/Terraform/*.tfvars" 
+    displayName: 'PowerShell Script'
+
+  - task: TerraformTaskV4@4
+    displayName: 'Terraform : Init'
+    inputs:
+      provider: aws
+      workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+      commandOptions: '-backend=true'
+      backendServiceAWS:  ${{ parameters.backendServiceAWS }}
+      backendAWSBucketName: ${{ parameters.backendAWSBucketName }}
+      backendAWSKey: ${{ parameters.backendAWSKey }}     
+
+  - task: TerraformTaskV4@4
+    name: terraformPlan
+    displayName: 'Terraform : Plan'
+    inputs:
+      provider: aws
+      command: plan
+      workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'          
+      commandOptions: '-var-file="devops.tfvars" -out=tfplan'
+      environmentServiceNameAWS: ${{ parameters.environmentServiceNameAWS }}
+
+  # Write terraform show output in default format to a markdown file
+  - task: TerraformTaskV4@4
+    name: TerraformShow
+    displayName: 'Terraform : Show'
+    inputs:
+      provider: 'aws'
+      environmentServiceNameAWS: ${{ parameters.environmentServiceNameAWS }}
+      command: 'show'
+      commandOptions: 'tfplan -no-color'
+      outputTo: 'file'
+      outputFormat: 'default'
+      fileName: '$(System.DefaultWorkingDirectory)/Terraform/$(environment)_TerraformPlan.md'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+
+  # Display plan in the pipeline build summary
+  - task: Bash@3
+    displayName: Show plan summary
+    inputs:
+      targetType: 'inline'
+      workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform/'
+      script: |
+        ls -la
+        sed -i '1 i\```' $(environment)_TerraformPlan.md
+        echo '```' >> $(environment)_TerraformPlan.md
+        echo "##vso[task.uploadsummary]$(System.DefaultWorkingDirectory)/Terraform/$(environment)_TerraformPlan.md"    
+
+  - task: TerraformTaskV4@4
+    displayName: 'Terraform : Apply'
+    condition: and( eq(variables['PlanOnly'], 'false'), eq(variables['terraformPlan.changesPresent'], 'true'), ne(variables['Build.Reason'], 'PullRequest') )
+    inputs:
+      provider: aws
+      command: apply
+      workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
+      commandOptions: ' -var-file="devops.tfvars"'
+      environmentServiceNameAWS: ${{ parameters.environmentServiceNameAWS }}
+      backendAWSBucketName: $(backendAWSBucketName)
+      backendAWSKey: $(backendAWSKey)     
