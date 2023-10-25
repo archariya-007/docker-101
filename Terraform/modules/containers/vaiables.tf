@@ -12,7 +12,7 @@ variable "container_name"{
   type = string
 }
 
-variable "carriernotification_sg"{
+variable "hulk-healthcommunication_sg"{
   type  = any
 }
 
@@ -37,11 +37,11 @@ variable "container_cluster"{
   default = ""
 }
 
-variable "health_communication_container_cpu_unit" {
+variable "hulk_health_communication_container_cpu_unit" {
   type = number
   default = 256
 }
-variable "health_communication_container_memory" {
+variable "hulk_health_communication_container_memory" {
   type = number
   default = 1024
 }
@@ -52,23 +52,5 @@ variable "container_dll" {
 
 variable "account_id" {
   description = "Account id"
-  default     = "123456789012"
   type        = string
-}
-
-variable "datadog_api_key" {
-  description = "datadogs api key"
-  type = string
-}
-
-variable "datadog_version" {
-  description = "datadog integration version"
-  default = "1.091323"
-  type = string
-}
-
-variable "datadog_service_name" {
-	description = "the service name"
-	default = ""
-	type = string
 }

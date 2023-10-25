@@ -1,7 +1,7 @@
 name: Terraform_$(Date:yyyyMMdd)_$(Rev:r)
 appendCommitMessageToRunName: false
 
-trigger: 
+trigger:
   branches:
     include:
     - main 
@@ -83,4 +83,3 @@ stages:
                 backendAWSBucketName: $(backendAWSBucketName)
                 backendAWSKey: $(backendAWSKey)
                 environmentServiceNameAWS: ${{ variables.serviceAccount }}
-  
