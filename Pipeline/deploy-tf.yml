@@ -4,10 +4,10 @@ appendCommitMessageToRunName: false
 trigger:
   branches:
     include:
-    - main 
+      - main
   paths:
     include:
-    - 'Terraform/**'
+      - "Terraform/**"
 
 resources:
   repositories:
@@ -18,7 +18,7 @@ resources:
       endpoint: Mercury
 
 variables:
-- group: Mercury-Terraform-Common
+  - group: Mercury-Terraform-Common
 
 stages:
   - stage: DEV_Terraform
@@ -26,60 +26,59 @@ stages:
     dependsOn: []
 
     variables:
-    - group: BEMod-Terraform-DEV
-    - name: serviceAccount
-      value: 'TerraformDeploy-DEV'
+      - group: BEMod-Terraform-DEV
+      - name: serviceAccount
+        value: "TerraformDeploy-DEV"
 
     jobs:
+      - job: CheckChanges
+        steps:
+          - checkout: self
+            # To properly assess if git changes fetch depth has to be at 0
+            fetchDepth: 0
+          # Check if there are changes in the folder
+          - powershell: |
+              $sinceYesterday = (Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
+              $changes = git log --since=$sinceYesterday --oneline  -- $(folder)
+              Write-Host "Changes: $changes"
+              if ($changes) 
+              {
+                Write-Host "##vso[task.setvariable variable=isFolder;isOutput=true]True"
+                Write-Host "##vso[task.logissue type=warning;]Changes in $(folder) folder"
+                Write-Host $changes
+              }
+              else 
+              {
+                Write-Host "##vso[task.setvariable variable=isFolder;isOutput=true]False"
+                Write-Host "##vso[task.logissue type=warning;]No Changes in $(folder) folder"            
+              }
+            name: SetVar
 
-    - job: CheckChanges
-      steps:
-      - checkout: self
-        # To properly assess if git changes fetch depth has to be at 0
-        fetchDepth: 0
-      # Check if there are changes in the folder
-      - powershell: |
-          $sinceYesterday = (Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
-          $changes = git log --since=$sinceYesterday --oneline  -- $(folder)
-          Write-Host "Changes: $changes"
-          if ($changes) 
-          {
-            Write-Host "##vso[task.setvariable variable=isFolder;isOutput=true]True"
-            Write-Host "##vso[task.logissue type=warning;]Changes in $(folder) folder"
-            Write-Host $changes
-          }
-          else 
-          {
-            Write-Host "##vso[task.setvariable variable=isFolder;isOutput=true]False"
-            Write-Host "##vso[task.logissue type=warning;]No Changes in $(folder) folder"            
-          }
-        name: SetVar
-           
-    - deployment: DEV_Deploy_Infrastructure
-      displayName: DEV Deploy Infrastructure
-      dependsOn: CheckChanges
-      # Do not deploy on a PR
-      # Deploy only if its changes and merger or nightly build or variable is true. 
-      condition: >-
-        and(
-          ne(variables['Build.Reason'], 'PullRequest'),        
-          or(
-            and( eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(dependencies.CheckChanges.outputs['SetVar.isFolder'], 'True') ),
-            and( eq(variables['Build.CronSchedule.DisplayName'], 'Nightly build'), eq(dependencies.CheckChanges.outputs['SetVar.isFolder'], 'True') ),
-            eq(variables['deployToDev'], 'true')
+      - deployment: DEV_Deploy_Infrastructure
+        displayName: DEV Deploy Infrastructure
+        dependsOn: CheckChanges
+        # Do not deploy on a PR
+        # Deploy only if its changes and merger or nightly build or variable is true.
+        condition: >-
+          and(
+            ne(variables['Build.Reason'], 'PullRequest'),        
+            or(
+              and( eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(dependencies.CheckChanges.outputs['SetVar.isFolder'], 'True') ),
+              and( eq(variables['Build.CronSchedule.DisplayName'], 'Nightly build'), eq(dependencies.CheckChanges.outputs['SetVar.isFolder'], 'True') ),
+              eq(variables['deployToDev'], 'true')
+            )
           )
-        )
-      pool:      
-        vmImage: ubuntu-latest
-      continueOnError: false
-      environment: 'mercury-dev'
-      strategy:
-        runOnce: 
-          deploy:
-            steps:
-            - template: Templates/terraform-plan-show-apply-template.yml@templates
-              parameters: 
-                backendServiceAWS: ${{ variables.serviceAccount }}
-                backendAWSBucketName: $(backendAWSBucketName)
-                backendAWSKey: $(backendAWSKey)
-                environmentServiceNameAWS: ${{ variables.serviceAccount }}
+        pool:
+          vmImage: ubuntu-latest
+        continueOnError: false
+        environment: "mercury-dev"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Templates/terraform-plan-show-apply-template.yml@templates
+                  parameters:
+                    backendServiceAWS: ${{ variables.serviceAccount }}
+                    backendAWSBucketName: $(backendAWSBucketName)
+                    backendAWSKey: $(backendAWSKey)
+                    environmentServiceNameAWS: ${{ variables.serviceAccount }}
