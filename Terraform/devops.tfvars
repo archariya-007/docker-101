@@ -1,3 +1,3 @@
-region                                       = "!!^^region^^!!"
-db_connection                                = "!!^^pSqlDatabaseConnectionString^^!!"
-environment                                  = "!!^^environment^^!!"
+region                                       = "us-east-1"
+db_connection                                = "hellodb.db"
+environment                                  = "dv"
