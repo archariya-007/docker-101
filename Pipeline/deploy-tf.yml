@@ -18,7 +18,7 @@ resources:
       endpoint: Mercury
 
 variables:
-  - group: Mercury-Terraform-Common
+  - group: BEMod-Terraform-DEV
 
 stages:
   - stage: DEV_Terraform
