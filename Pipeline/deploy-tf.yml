@@ -26,7 +26,7 @@ stages:
     dependsOn: []
 
     variables:
-    - group: Mercury-Terraform-DEV    
+    - group: BEMod-Terraform-DEV
     - name: serviceAccount
       value: 'TerraformDeploy-DEV'
 
