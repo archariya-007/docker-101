@@ -73,16 +73,4 @@ steps:
         ls -la
         sed -i '1 i\```' $(environment)_TerraformPlan.md
         echo '```' >> $(environment)_TerraformPlan.md
-        echo "##vso[task.uploadsummary]$(System.DefaultWorkingDirectory)/Terraform/$(environment)_TerraformPlan.md"    
-
-  # - task: TerraformTaskV4@4
-  #   displayName: 'Terraform : Apply'
-  #   condition: and( eq(variables['PlanOnly'], 'false'), eq(variables['terraformPlan.changesPresent'], 'true'), ne(variables['Build.Reason'], 'PullRequest') )
-  #   inputs:
-  #     provider: aws
-  #     command: apply
-  #     workingDirectory: '$(System.DefaultWorkingDirectory)/Terraform'
-  #     commandOptions: ' -var-file="devops.tfvars"'
-  #     environmentServiceNameAWS: ${{ parameters.environmentServiceNameAWS }}
-  #     backendAWSBucketName: $(backendAWSBucketName)
-  #     backendAWSKey: $(backendAWSKey)     
+        echo "##vso[task.uploadsummary]$(System.DefaultWorkingDirectory)/Terraform/$(environment)_TerraformPlan.md"
